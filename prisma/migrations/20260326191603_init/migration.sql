@@ -1,0 +1,32 @@
+BEGIN TRY
+
+BEGIN TRAN;
+
+-- CreateTable
+CREATE TABLE [dbo].[Technician] (
+    [id] INT NOT NULL IDENTITY(1,1),
+    [fullName] NVARCHAR(1000) NOT NULL,
+    [phone] NVARCHAR(1000) NOT NULL,
+    [email] NVARCHAR(1000) NOT NULL,
+    [zipCode] NVARCHAR(1000) NOT NULL,
+    [state] CHAR(2) NOT NULL,
+    [city] NVARCHAR(1000) NOT NULL,
+    [isDeleted] BIT NOT NULL CONSTRAINT [Technician_isDeleted_df] DEFAULT 0,
+    [createdAt] DATETIME2 NOT NULL CONSTRAINT [Technician_createdAt_df] DEFAULT CURRENT_TIMESTAMP,
+    [updatedAt] DATETIME2 NOT NULL,
+    CONSTRAINT [Technician_pkey] PRIMARY KEY CLUSTERED ([id]),
+    CONSTRAINT [Technician_email_key] UNIQUE NONCLUSTERED ([email])
+);
+
+COMMIT TRAN;
+
+END TRY
+BEGIN CATCH
+
+IF @@TRANCOUNT > 0
+BEGIN
+    ROLLBACK TRAN;
+END;
+THROW
+
+END CATCH
