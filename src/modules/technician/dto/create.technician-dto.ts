@@ -1,0 +1,8 @@
+export interface CreateTechnicianDTO {
+  fullName: string;
+  phone: string;
+  email: string;
+  zipCode: string;
+  state: string;
+  city: string;
+}

@@ -1,6 +1,6 @@
 # Comentários técnicos – Backend
 
-## Progresso do desafio (Backend)
+## Progresso do desafio (Backend) 26-03
 
 - [x] Criar repositório e estruturar pastas (`backend`, `frontend`).
 - [x] Configurar projeto Node + TypeScript no backend.
@@ -91,9 +91,9 @@ datasource db {
 - **Solução**:
   - Ajustar a URL para o formato SQL Server recomendado pelo Prisma, com parâmetros separados por `;`.
   - Escapar a senha entre `{}`:
-    - `password={desafio2026!}`
+    - `password={seupassword}`
   - Exemplo final de `DATABASE_URL`:
-    - `sqlserver://desafio-pratica.database.windows.net:1433;initial catalog=desafio-pratica;user=pratica;password={desafio2026!};encrypt=true;trustServerCertificate=false;`
+    - `sqlserver://desafio-pratica.database.windows.net:1433;initial catalog=seubucket-pratica;user=pratica;password={seupassword};encrypt=true;trustServerCertificate=false;`
 
 ---
 
@@ -125,15 +125,132 @@ datasource db {
 
 ---
 
-## Próximos passos (Backend)
+## Próximos passos (Backend) 27-03
 
-- [ ] Criar estrutura de rotas para `Technician`:
+- [x] Criar estrutura de rotas para `Technician`:
   - `POST /technicians`
   - `GET /technicians`
   - `GET /technicians/:id`
   - `PUT /technicians/:id`
   - `DELETE /technicians/:id` (soft delete).
-- [ ] Implementar controllers usando `prisma.technician`.
-- [ ] Garantir que listagens sempre filtrem `isDeleted = false`.
-- [ ] Tratar erro de e-mail duplicado (código `P2002` do Prisma).
-- [ ] Testar endpoints com Postman/Insomnia antes de integrar com o frontend.
+- [x] Implementar controllers usando `prisma.technician`.
+- [x] Garantir que listagens sempre filtrem `isDeleted = false`.
+- [x] Tratar erro de e-mail duplicado (código `P2002` do Prisma).
+- [x] Testar endpoints com Postman/Insomnia antes de integrar com o frontend.
+
+---
+
+## Autenticação e Autorização (Admin + JWT)
+
+### Modelagem – Admin
+
+Para evitar guardar senha em texto puro (ou hash) em variáveis de ambiente, optei por modelar um `Admin` no banco de dados:
+
+```prisma
+model Admin {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String   
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+```
+
+Isso permite:
+
+- Persistir credenciais de admin de forma segura (somente hash no banco).
+- Evoluir no futuro para múltiplos admins, se necessário.
+- Desacoplar completamente a autenticação de `.env`.
+
+### Seed de Admin 
+
+Para criar o admin inicial (`de@praticabr*****` / `password=********`), foi criado um **script de seed** que roda localmente e escreve o hash diretamente no banco, sem deixar a senha exposta no código-fonte ou no repositório:
+
+```js
+import "dotenv/config";
+import bcrypt from "bcrypt";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+async function main() {
+  const email = "de@praticabr****";
+  const plainPassword = "********";
+
+  const existing = await prisma.admin.findUnique({ where: { email } });
+
+  if (existing) {
+    console.log("Admin já existe, não será recriado.");
+    return;
+  }
+
+  const passwordHash = await bcrypt.hash(plainPassword, 10);
+
+  await prisma.admin.create({
+    data: {
+      email,
+      password: passwordHash,
+    },
+  });
+
+  console.log("Admin criado com sucesso:", email);
+}
+
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
+```
+
+> **Importante:** no repositório público, a senha não aparece em texto claro na documentação. Aqui está mascarada (`********`) apenas para explicar o fluxo. No ambiente local, o valor real é configurado pelo desenvolvedor, e apenas o **hash** vai para o banco.
+
+### Fluxo de login
+
+Endpoint implementado:
+
+- `POST /api/auth/login`
+
+Fluxo:
+
+1. Recebe `email` e `password` em texto puro.
+2. Busca um `Admin` com esse `email` usando Prisma.
+3. Compara `password` com o hash salvo via `bcrypt.compare`.
+4. Em caso de sucesso, gera um **token JWT** com:
+
+   ```json
+   {
+     "sub": 1,
+     "role": "admin",
+     "email": "de@praticabr.com",
+     "iat": 1234567890,
+     "exp": 1234569999
+   }
+   ```
+
+5. Retorna `{ "token": "<jwt>" }` no corpo da resposta.
+
+A chave de assinatura do JWT é configurada via variável de ambiente:
+
+```env
+JWT_SECRET=**************
+```
+
+(Na documentação pública, o valor é sempre mascarado.)
+
+### Middleware de autorização (authGuard)
+
+Um middleware `authGuard` foi implementado para proteger as rotas de técnicos:
+
+- Lê o header `Authorization: Bearer <token>`.
+- Valida o JWT com a `JWT_SECRET`.
+- Verifica se `role === "admin"`.
+- Em caso de sucesso, anexa o payload em `req.user` e segue para a rota.
+- Em caso de falha, responde com:
+  - `401` – token ausente ou inválido
+  - `403` – role diferente de `admin` (se for necessário no futuro)
+
+Todas as rotas de `Technician` usam esse middleware, garantindo que **somente admins autenticados** conseguem criar/listar/atualizar/excluir técnicos.
