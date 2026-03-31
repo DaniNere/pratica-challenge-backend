@@ -1,4 +1,5 @@
-import { Request, Response } from "express";
+import { Response } from "express";
+import { AuthRequest } from "../auth/auth.middleware.js";
 import {
   createTechnician,
   listTechnicians,
@@ -9,7 +10,11 @@ import {
 import { CreateTechnicianDTO } from "./dto/create.technician-dto.js";
 import { UpdateTechnicianDTO } from "./dto/update.technician-dto.js";
 
-export async function createTechnicianHandler(req: Request, res: Response) {
+/**
+ * Handler para criação: Já retorna o objeto completo gerado pelo Prisma,
+ * incluindo o ID e os campos de auditoria (createdAt, updatedAt).
+ */
+export async function createTechnicianHandler(req: AuthRequest, res: Response) {
   try {
     const { fullName, phone, email, zipCode, state, city } =
       req.body as CreateTechnicianDTO;
@@ -41,9 +46,13 @@ export async function createTechnicianHandler(req: Request, res: Response) {
   }
 }
 
-export async function listTechniciansHandler(req: Request, res: Response) {
+/**
+ * Handler para listagem: Retorna um array com os objetos completos.
+ */
+export async function listTechniciansHandler(req: AuthRequest, res: Response) {
   try {
     const technicians = await listTechnicians();
+    console.log("Técnicos listados:", technicians);
     return res.json(technicians);
   } catch (error) {
     console.error("Erro ao listar técnicos:", error);
@@ -51,7 +60,10 @@ export async function listTechniciansHandler(req: Request, res: Response) {
   }
 }
 
-export async function getTechnicianByIdHandler(req: Request, res: Response) {
+/**
+ * Handler para busca por ID: Retorna o objeto completo se encontrado.
+ */
+export async function getTechnicianByIdHandler(req: AuthRequest, res: Response) {
   try {
     const id = Number(req.params.id);
 
@@ -74,8 +86,12 @@ export async function getTechnicianByIdHandler(req: Request, res: Response) {
   }
 }
 
-export async function updateTechnicianHandler(req: Request, res: Response) {
+/**
+ * Handler para atualização: Retorna o objeto completo com os dados novos.
+ */
+export async function updateTechnicianHandler(req: AuthRequest, res: Response) {
   try {
+    console.log("Payload recebido para atualização:", req.body);
     const id = Number(req.params.id);
 
     if (Number.isNaN(id)) {
@@ -101,7 +117,10 @@ export async function updateTechnicianHandler(req: Request, res: Response) {
   }
 }
 
-export async function deleteTechnicianHandler(req: Request, res: Response) {
+/**
+ * Handler para deleção (Soft Delete): Retorna 204 (Sucesso sem conteúdo).
+ */
+export async function deleteTechnicianHandler(req: AuthRequest, res: Response) {
   try {
     const id = Number(req.params.id);
 

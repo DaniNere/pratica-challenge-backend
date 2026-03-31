@@ -45,7 +45,6 @@ describe("Technician Service (production functions)", () => {
     const technicians = await listTechnicians();
 
     expect(Array.isArray(technicians)).toBe(true);
-    // todos com isDeleted = false
     expect(technicians.every((t) => !t.isDeleted)).toBe(true);
   });
 
