@@ -4,6 +4,15 @@ import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
 
+export interface AuthRequest extends Request {
+  user?: {
+    sub: string;
+    role?: string;
+    iat: number;
+    exp: number;
+  };
+}
+
 export function authGuard(req: Request, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
 
@@ -25,7 +34,7 @@ export function authGuard(req: Request, res: Response, next: NextFunction) {
       return res.status(403).json({ message: "Acesso não autorizado" });
     }
 
-    (req as any).user = payload;
+    (req as AuthRequest).user = payload;
 
     return next();
   } catch (error) {

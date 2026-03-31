@@ -4,6 +4,7 @@ import { validateAdminCredentials } from "./auth.service.js";
 
 export async function login(req: Request, res: Response) {
   try {
+    console.log("Recebendo login:", req.body);
     const { email, password } = req.body;
 
     // validação básica de entrada
@@ -19,7 +20,6 @@ export async function login(req: Request, res: Response) {
       return res.status(401).json({ message: "Credenciais inválidas" });
     }
 
-    // { token: "..." }
     return res.json(result);
   } catch (error) {
     console.error("Erro no login:", error);

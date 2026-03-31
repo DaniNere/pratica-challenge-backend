@@ -1,7 +1,7 @@
 import request from "supertest";
 import bcrypt from "bcrypt";
-import { createApp } from "../../app";
-import { prisma } from "../../config/prismaClient";
+import { createApp } from "../../app.js";
+import { prisma } from "../../config/prismaClient.js";
 
 const app = createApp();
 
