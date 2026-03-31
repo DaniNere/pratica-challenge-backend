@@ -1,40 +1,56 @@
-# 📝 Comentários Técnicos – Frontend
+📌 Progresso do Desafio
+[x] Setup Inicial: Repositório configurado com Vite + React + TypeScript.
+[x] Estrutura de Pastas: Organização modular estabelecida (api, components, pages, contexts, hooks).
+[x] Desenvolvimento da Tela de Login: Layout Split Screen fiel ao Adobe XD.
+[x] Autenticação & Estado:
+[x] Integração com API via Axios.
+[x] Implementação de Context API (AuthContext) para gestão global de token.
+[x] Persistência de login via localStorage.
 
-## 📌 Progresso do Desafio (Frontend) 28-03 e 29-03
-- [x] Setup Inicial: Projeto estruturado com Vite + React + TypeScript para máxima performance.
-- [x] Estrutura de Pastas: Organização modular (assets, components, hooks, pages, styles, types).
-- [x] Tela de Login: Layout Split Screen rigorosamente fiel ao Adobe XD (1366x768).
-- [x] Gestão de Autenticação:
-  - [x] Criação do AuthContext para gerenciamento global do estado de login.
-  - [x] Persistência do Token JWT via localStorage.
-  - [x] Implementação de PrivateRoute com <Outlet /> (React Router v6).
-- [X] Tela de Login (UI/UX)  
-- [x] Gestão de Técnicos (UI/UX):
-- [x] Tela de listagem com Sidebar e Header funcional.
-- [x] Tabela de técnicos com ações de Editar e Excluir.
-- [x] TechnicianModal: Formulário completo para Criação/Edição com máscaras de CEP e Telefone.
-- [x] ConfirmationModal: Fluxos de segurança para excluir técnico e cancelar edição.
-- [x] Sistema de Toast: Feedback visual de sucesso (3s) em conformidade com o layout.
 
-## 🛠️ Decisões Técnicas
-- Styled Components: Escolhido para garantir o encapsulamento do CSS e permitir o uso de props dinâmicas (ex: efeito de Blur no container quando modais estão abertos). Mantendo a fidelidade ao designer.
-- Context API & Custom Hooks: Centralização da lógica de autenticação no useAuth, permitindo que qualquer componente acesse o estado de login de forma limpa.
-- Atomic Design Adaptado: Componentização de elementos base (Button, Inputs, Modais, Toast) para reaproveitamento total entre as telas de Login e Técnicos.
-- Fidelidade de Design:
-  - Uso de medidas exatas do protótipo.
-  - Implementação de estados de hover e active nos botões e itens de menu.
-  - Tratamento de fechamento de modais com stopPropagation para evitar comportamentos indesejados no overlay.
+##🛠️ Decisões Técnicas
+* Arquitetura de Rotas: Implementação de BrowserRouter com PrivateRoute utilizando o componente <Outlet /> do React Router v6. Essa estratégia permite centralizar a lógica de proteção em um único "wrapper", facilitando a escalabilidade caso novas rotas privadas sejam adicionadas.
+* Segurança de Dados: Integração com backend utilizando bcrypt para validação de hash de senhas. Isso garante que as credenciais nunca sejam comparadas em texto puro, elevando o padrão de segurança do sistema.
+* Injeção de Contexto (Context API): Configuração do AuthProvider no root da aplicação (main.tsx). Essa decisão garante que o estado de autenticação (signed, loading) e o método signIn estejam acessíveis em todos os nós da árvore de componentes via custom hook.
+* Refatoração UI & Clean Code: Centralização de componentes de entrada de dados (TextInput, PasswordInput) para reaproveitamento sistemático. Os componentes foram desacoplados da lógica de negócio da página de Login, permitindo sua reutilização direta nos formulários de técnicos (CRUD).
+* Gerenciamento de Instâncias: Utilização do Axios para criar uma instância base da API, permitindo a configuração de interceptors ou headers globais (como o Authorization: Bearer token) de forma simplificada após o login.
 
-## 🎨 Detalhes de Implementação (UI/UX)
-- Máscaras de Input: Implementadas funções de tratamento de string em tempo real para: CEP: 00000-000 Telefone: (00) 00000-0000
-- Feedback de Sucesso (Toast): Componente posicionado no topo da tela, com fundo verde (#28A745) e fechamento automático após 3000ms.
-- Segurança Visual: Modais de confirmação impedem ações acidentais em processos destrutivos (Excluir).
-- Blur Dinâmico: Aplicação de filtro blur(5px) no conteúdo principal sempre que um modal ou toast de confirmação é exibido.
-## 🚀 Próximos Passos (Integração) 30-03
-- [x] Consumo de API: Substituir os dados mockados (techniciansData) por chamadas reais via Axios.
-- [X] Integração CRUD:
-   - Conectar o handleSave do modal ao POST e PUT do backend.
-   - Conectar o confirmDelete ao DELETE (soft delete) da API.
-- [X] Interceptors Axios: Configurar o envio automático do Authorization: Bearer <token> em todas as requisições para as rotas protegidas.
-- [X] Tratamento de Erros da API: Exibir Toasts de erro caso a conexão com o banco Azure SQL falhe ou o e-mail já exista.
-- Ficou excelente a estrutura! Esse documento ajuda muito a provar a senioridade do seu código no desafio. Algo mais que queira incluir antes de fecharmos essa parte?
+
+###🎨 Detalhes de Implementação (UI/UX)
+Fidelidade ao Design: Painéis rigorosamente alinhados com as medidas do Adobe XD (660px / 746px).
+Tratamento de Erros: Feedback visual de "Credenciais Inválidas" integrado ao catch das requisições Axios.
+Responsividade: Layout adaptável para dispositivos móveis com ocultação inteligente do painel de fachada.
+
+###🚀 Próximos Passos
+[x] Criar Rotas Privadas para proteger a listagem de técnicos.
+[x] CRUD de Técnicos: Implementar as funcionalidades de Criar, Editar e Excluir.
+
+
+
+
+
+🚀 O que eu melhoraria ou adicionaria (Frontend)
+Se houvesse mais tempo para o desenvolvimento, estas seriam as implementações prioritárias para elevar a qualidade do projeto:
+
+Validação de Formulários Robusta:
+
+Implementação da biblioteca React Hook Form em conjunto com Zod ou Yup para validações de esquema mais complexas e tratamento de erros em tempo real campos a campo.
+Feedback de Carregamento (Skeleton Text):
+
+Substituir o texto "Carregando técnicos…" por Skeletons (elementos que imitam o formato do conteúdo enquanto os dados não chegam), proporcionando uma percepção de velocidade e UX superior.
+Testes Automatizados:
+
+Criação de Testes de Unidade com Jest para as funções de máscara (CEP, Telefone) e Testes de Componente com React Testing Library para os fluxos de abertura e fechamento de modais.
+Gerenciamento de Estado de Dados:
+
+Utilização de TanStack Query (React Query) para o consumo da API. Isso permitiria cache automático dos dados, sincronização em segundo plano e tratamento nativo de estados de loading e error.
+Internacionalização (i18n):
+
+Embora o código esteja em inglês, a interface poderia suportar múltiplos idiomas (PT-BR/EN) de forma dinâmica através do react-i18next.
+Acessibilidade (a11y):
+
+Auditoria completa com Aria-labels, navegação via teclado aprimorada nos modais (Trap Focus) e garantia de contraste de cores para usuários com deficiência visual.
+Animações de Layout:
+
+Uso de Framer Motion para animar a entrada e saída das linhas da tabela e a abertura suave dos modais, tornando a interface mais orgânica.
+

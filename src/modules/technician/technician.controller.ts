@@ -1,4 +1,6 @@
 import { Response } from "express";
+import { plainToInstance } from "class-transformer";
+import { validate } from "class-validator";
 import { AuthRequest } from "../auth/auth.middleware.js";
 import {
   createTechnician,
@@ -10,30 +12,17 @@ import {
 import { CreateTechnicianDTO } from "./dto/create.technician-dto.js";
 import { UpdateTechnicianDTO } from "./dto/update.technician-dto.js";
 
-/**
- * Handler para criação: Já retorna o objeto completo gerado pelo Prisma,
- * incluindo o ID e os campos de auditoria (createdAt, updatedAt).
- */
+
 export async function createTechnicianHandler(req: AuthRequest, res: Response) {
   try {
-    const { fullName, phone, email, zipCode, state, city } =
-      req.body as CreateTechnicianDTO;
+    const dto = plainToInstance(CreateTechnicianDTO, req.body);
+    const errors = await validate(dto);
 
-    if (!fullName || !phone || !email || !zipCode || !state || !city) {
-      return res.status(400).json({
-        message:
-          "Campos obrigatórios: fullName, phone, email, zipCode, state, city",
-      });
+    if (errors.length > 0) {
+      return res.status(400).json({ message: "Erro de validação", errors });
     }
 
-    const technician = await createTechnician({
-      fullName,
-      phone,
-      email,
-      zipCode,
-      state,
-      city,
-    });
+    const technician = await createTechnician(dto);
 
     return res.status(201).json(technician);
   } catch (error: any) {
@@ -98,9 +87,14 @@ export async function updateTechnicianHandler(req: AuthRequest, res: Response) {
       return res.status(400).json({ message: "ID inválido" });
     }
 
-    const payload = req.body as UpdateTechnicianDTO;
+    const dto = plainToInstance(UpdateTechnicianDTO, req.body);
+    const errors = await validate(dto);
 
-    const updated = await updateTechnician(id, payload);
+    if (errors.length > 0) {
+      return res.status(400).json({ message: "Erro de validação", errors });
+    }
+
+    const updated = await updateTechnician(id, dto);
 
     if (!updated) {
       return res.status(404).json({ message: "Técnico não encontrado" });

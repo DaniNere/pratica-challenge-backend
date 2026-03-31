@@ -1,12 +1,91 @@
 # Prática Challenge – Backend (Technician Management API)
 
-Backend da aplicação do desafio da Prática, responsável pelo cadastro e gerenciamento de técnicos parceiros.
-
-Este serviço expõe uma API em **Node.js + Express**, usa **SQL Server** com **Prisma** como ORM e implementa autenticação via **JWT**. Também conta com **testes automatizados** usando **Jest + TypeScript**.
+Este projeto é o backend da aplicação de gerenciamento de técnicos, desenvolvido para o desafio técnico da Prática. Ele fornece uma API robusta para o cadastro, listagem, edição e exclusão de técnicos parceiros, além de autenticação para administradores.
 
 ---
 
-## Tecnologias principais
+## 🚀 Como começar (Passo a passo)
+
+Siga as instruções abaixo para configurar e rodar a aplicação em seu ambiente local.
+
+### 1. Clonar o Repositório
+Abra o terminal na pasta onde deseja salvar o projeto e execute:
+```bash
+git clone https://github.com/seu-usuario/nome-do-repositorio.git
+cd nome-do-repositorio
+```
+
+### 2. Configurar o Banco de Dados (SQL Server)
+A aplicação utiliza o **SQL Server**. Você pode utilizá-lo de duas formas:
+
+#### Opção A: Usando Docker (Recomendado)
+Se você tem o Docker instalado, pode subir uma instância do SQL Server rapidamente com o comando:
+```bash
+docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=YourStrong!Passw0rd" \
+   -p 1433:1433 --name sqlserver_pratica \
+   -d mcr.microsoft.com/mssql/server:2022-latest
+```
+
+#### Opção B: Instalação Local
+Certifique-se de que o serviço do SQL Server está rodando e que você tem as credenciais de acesso (usuário e senha) em mãos.
+
+---
+
+### 3. Instalar Dependências
+Dentro da pasta raiz do projeto, instale os pacotes necessários:
+```bash
+npm install
+```
+
+### 4. Configurar Variáveis de Ambiente
+Crie um arquivo chamado `.env` na raiz do projeto (use o arquivo `.env.example` como referência) e preencha com as suas credenciais:
+
+```env
+# Exemplo de configuração (ajuste conforme seu banco)
+DATABASE_URL="sqlserver://localhost:1433;database=pratica_db;user=sa;password=YourStrong!Passw0rd;encrypt=true;trustServerCertificate=true;"
+SHADOW_DATABASE_URL="sqlserver://localhost:1433;database=pratica_shadow;user=sa;password=YourStrong!Passw0rd;encrypt=true;trustServerCertificate=true;"
+
+JWT_SECRET="sua_chave_secreta_aqui"
+```
+*Nota: A `SHADOW_DATABASE_URL` é exigida pelo Prisma para realizar as migrações no SQL Server.*
+
+---
+
+### 5. Preparar o Banco de Dados
+Agora, vamos criar as tabelas e popular o usuário administrador inicial:
+
+1. **Rodar as Migrations:** (Cria a estrutura das tabelas)
+   ```bash
+   npx prisma migrate dev
+   ```
+
+2. **Executar o Seed:** (Cria o usuário `de@praticabr.com` no banco)
+   ```bash
+   npx prisma db seed
+   ```
+
+---
+
+### 6. Executar a Aplicação
+Com tudo configurado, inicie o servidor:
+```bash
+npm run dev
+```
+A API estará disponível em: `http://localhost:3000` (ou na porta configurada).
+
+---
+
+## 🧪 Testes
+Para garantir que tudo está funcionando corretamente, você pode rodar os testes automatizados:
+```bash
+npm test
+```
+
+---
+
+## 🛠️ Detalhes Técnicos
+
+### Tecnologias principais
 
 - **Node.js** + **Express**
 - **TypeScript**
@@ -30,11 +109,11 @@ Este serviço expõe uma API em **Node.js + Express**, usa **SQL Server** com **
    - cadastrar novos técnicos;
    - listar técnicos;
    - editar técnicos;
-   - excluir técnicos (soft delete: marca como excluído, não remove fisicamente).
+   - excluir técnicos (**Soft Delete**: o registro não é removido do banco, apenas marcado como excluído para auditoria).
 
 Todas as rotas de técnicos são protegidas por um middleware de autenticação (`authGuard`), que:
 - valida o token JWT;
-- garante que o usuário é um admin válido.
+- garante que apenas usuários com a regra (`role`) de **admin** tenham acesso.
 
 ---
 
@@ -64,11 +143,11 @@ Decisões de modelagem:
 - `email` é único para evitar cadastro duplicado.
 - `state` usa `Char(2)`, garantindo siglas como `"SP"`, `"RJ"`.
 - `isDeleted` implementa **soft delete**:
-  - ao “excluir” um técnico, apenas marca `isDeleted = true`;
+  - ao "excluir" um técnico, o sistema altera o status para `isDeleted = true`;
   - listagens consideram apenas `isDeleted = false`.
 - `createdAt` e `updatedAt` são atualizados automaticamente pelo Prisma.
 
-### Admin
+### Admin (Administrador)
 
 Model para autenticação do usuário administrador:
 
@@ -84,71 +163,6 @@ model Admin {
 
 - Guarda apenas o **hash da senha**, nunca a senha em texto puro.
 - Permite evoluir futuramente para múltiplos administradores.
-
----
-
-## Configuração do Prisma e SQL Server
-
-### Datasource (schema.prisma)
-
-```prisma
-datasource db {
-  provider          = "sqlserver"
-  url               = env("DATABASE_URL")
-  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
-}
-```
-
-- `DATABASE_URL` aponta para o banco principal.
-- `SHADOW_DATABASE_URL` aponta para o banco shadow, necessário para `prisma migrate dev` com SQL Server.
-
-### Exemplo de `.env` para desenvolvimento local (Docker SQL Server)
-
-```env
-# Banco principal
-DATABASE_URL="sqlserver://localhost:1433;database=pratica_test;user=sa;password=YourStrong!Passw0rd;encrypt=true;trustServerCertificate=true;"
-
-# Banco shadow para Prisma
-SHADOW_DATABASE_URL="sqlserver://localhost:1433;database=pratica_test_shadow;user=sa;password=YourStrong!Passw0rd;encrypt=true;trustServerCertificate=true;"
-
-# JWT
-JWT_SECRET=changeme-in-local-env
-```
-
-> Em produção / Azure SQL, a string de conexão muda (host, usuário, senha, etc.), mas mantém o formato `sqlserver://...;database=...;encrypt=true;trustServerCertificate=...`.
-
-### Migrations
-
-Para aplicar as migrations:
-
-```bash
-npx prisma migrate dev --name init
-```
-
-Isso cria as tabelas `Admin` e `Technician` de acordo com o schema.
-
----
-
-## Seed de admin (usuário administrador)
-
-Para criar o admin inicial, existe um script de seed que:
-
-- verifica se já existe um admin com o e-mail de desafio (`de@praticabr.com`);
-- se não existir, cria um novo com a senha definida no código/variável local, armazenando apenas o **hash** com `bcrypt`.
-
-Exemplo simplificado:
-
-```ts
-import "dotenv/config";
-import bcrypt from "bcrypt";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
-
-async function main() {
-  const email = "de@********.com";
-  const plainPassword = "********";
-  const existing = await prisma.admin.findUnique({ where: { email } });
 
   if (existing) {
     console.log("Admin already exists, skipping seed.");
@@ -173,4 +187,3 @@ main()
     process.exit(1);
   })
   .finally(async
-
