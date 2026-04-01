@@ -1,56 +1,60 @@
-📌 Progresso do Desafio
-[x] Setup Inicial: Repositório configurado com Vite + React + TypeScript.
-[x] Estrutura de Pastas: Organização modular estabelecida (api, components, pages, contexts, hooks).
-[x] Desenvolvimento da Tela de Login: Layout Split Screen fiel ao Adobe XD.
-[x] Autenticação & Estado:
-[x] Integração com API via Axios.
-[x] Implementação de Context API (AuthContext) para gestão global de token.
-[x] Persistência de login via localStorage.
 
+## 🚀 Progresso e Checklist
 
-##🛠️ Decisões Técnicas
-* Arquitetura de Rotas: Implementação de BrowserRouter com PrivateRoute utilizando o componente <Outlet /> do React Router v6. Essa estratégia permite centralizar a lógica de proteção em um único "wrapper", facilitando a escalabilidade caso novas rotas privadas sejam adicionadas.
-* Segurança de Dados: Integração com backend utilizando bcrypt para validação de hash de senhas. Isso garante que as credenciais nunca sejam comparadas em texto puro, elevando o padrão de segurança do sistema.
-* Injeção de Contexto (Context API): Configuração do AuthProvider no root da aplicação (main.tsx). Essa decisão garante que o estado de autenticação (signed, loading) e o método signIn estejam acessíveis em todos os nós da árvore de componentes via custom hook.
-* Refatoração UI & Clean Code: Centralização de componentes de entrada de dados (TextInput, PasswordInput) para reaproveitamento sistemático. Os componentes foram desacoplados da lógica de negócio da página de Login, permitindo sua reutilização direta nos formulários de técnicos (CRUD).
-* Gerenciamento de Instâncias: Utilização do Axios para criar uma instância base da API, permitindo a configuração de interceptors ou headers globais (como o Authorization: Bearer token) de forma simplificada após o login.
+### Fase 1: Setup, Infraestrutura e Segurança
+- [x] Estrutura inicial de pastas e configuração do compilador TypeScript.
+- [x] Configuração do ambiente local com SQL Server via Docker.
+- [x] Instalação e inicialização do Prisma ORM (Diferencial).
+- [x] Implementação de criptografia de senhas com **Bcrypt** para o Admin (Extra).
+- [x] Configuração de autenticação via **JWT (Token)** para proteção das rotas (Extra).
 
+### Fase 2: Modelagem e CRUD Principal
+- [x] Definição do schema Prisma e execução das migrations.
+- [x] Script de Seed para criação automática do usuário administrador.
+- [x] Implementação das rotas RESTful para `Technician` (CRUD completo).
+- [x] Desenvolvimento de Controllers e Services para isolamento de lógica.
 
-###🎨 Detalhes de Implementação (UI/UX)
-Fidelidade ao Design: Painéis rigorosamente alinhados com as medidas do Adobe XD (660px / 746px).
-Tratamento de Erros: Feedback visual de "Credenciais Inválidas" integrado ao catch das requisições Axios.
-Responsividade: Layout adaptável para dispositivos móveis com ocultação inteligente do painel de fachada.
+### Fase 3: Validação, Robustez e Confiabilidade
+- [x] Validação rigorosa de campos obrigatórios via DTOs com `class-validator`.
+- [x] Implementação de Soft Delete e filtragem automática de registros ativos.
+- [x] Tratamento de erros específicos do banco (ex: E-mail duplicado P2002).
 
-###🚀 Próximos Passos
-[x] Criar Rotas Privadas para proteger a listagem de técnicos.
-[x] CRUD de Técnicos: Implementar as funcionalidades de Criar, Editar e Excluir.
+----
+### Fase 4: Qualidade e Testes
+- [x] Criação de suíte de testes automatizados com **Jest** e **Supertest** (Diferencial).
+- [x] Cobertura de testes para rotas e serviços principais.
+- [x] Documentação técnica completa (README e Comments).
 
+---
 
+## 🏗️ Decisões Arquiteturais
 
+### 1. Confiabilidade e Validação (Critério de Avaliação)
+Para garantir a **fidelidade ao protótipo** e a integridade dos dados, utilizei DTOs (*Data Transfer Objects*) com a biblioteca `class-validator`. Isso garante que campos como e-mail, telefone e UF (2 dígitos) sigam exatamente o formato exigido antes de serem processados.
 
+----
+### 2. Persistência com Soft Delete
+Implementei a lógica de "Exclusão Lógica" (`isDeleted`). Ao deletar um técnico, ele apenas deixa de ser exibido na lista, mas permanece no banco para fins de auditoria, atendendo aos requisitos de segurança e histórico.
 
-🚀 O que eu melhoraria ou adicionaria (Frontend)
-Se houvesse mais tempo para o desenvolvimento, estas seriam as implementações prioritárias para elevar a qualidade do projeto:
+### 3. Qualidade de Código e ORM
+O uso do **Prisma ORM** foi uma escolha estratégica para garantir um código tipado de ponta a ponta. A arquitetura segue a separação de responsabilidades (Routes -> Controllers -> Services), facilitando a manutenção e a legibilidade.
 
-Validação de Formulários Robusta:
+### 4. Segurança e Extras
+Embora não solicitados no escopo inicial, implementei **JWT** e **Bcrypt**. Além disso, todas as rotas de técnicos são protegidas por um **Middleware de Autenticação (AuthGuard)**, que intercepta as requisições e valida o token antes de permitir o acesso aos dados. Essa abordagem garante que a lógica de segurança esteja isolada e seja aplicada de forma consistente em todo o módulo.
 
-Implementação da biblioteca React Hook Form em conjunto com Zod ou Yup para validações de esquema mais complexas e tratamento de erros em tempo real campos a campo.
-Feedback de Carregamento (Skeleton Text):
+---
 
-Substituir o texto "Carregando técnicos…" por Skeletons (elementos que imitam o formato do conteúdo enquanto os dados não chegam), proporcionando uma percepção de velocidade e UX superior.
-Testes Automatizados:
+## 🐳 Infraestrutura: SQL Server
+A aplicação foi configurada para rodar localmente via Docker, simplificando a avaliação.
 
-Criação de Testes de Unidade com Jest para as funções de máscara (CEP, Telefone) e Testes de Componente com React Testing Library para os fluxos de abertura e fechamento de modais.
-Gerenciamento de Estado de Dados:
+**Pontos técnicos relevantes:**
+- Configuração interna do Prisma tratada para permitir migrações de desenvolvimento em bancos locais sem interferir nos dados existentes.
 
-Utilização de TanStack Query (React Query) para o consumo da API. Isso permitiria cache automático dos dados, sincronização em segundo plano e tratamento nativo de estados de loading e error.
-Internacionalização (i18n):
+---
 
-Embora o código esteja em inglês, a interface poderia suportar múltiplos idiomas (PT-BR/EN) de forma dinâmica através do react-i18next.
-Acessibilidade (a11y):
-
-Auditoria completa com Aria-labels, navegação via teclado aprimorada nos modais (Trap Focus) e garantia de contraste de cores para usuários com deficiência visual.
-Animações de Layout:
-
-Uso de Framer Motion para animar a entrada e saída das linhas da tabela e a abertura suave dos modais, tornando a interface mais orgânica.
-
+## 🚀 Melhorias Futuras (Caso houvesse mais tempo)
+1. **Documentação com Swagger**: Implementaria o OpenApi para que os endpoints pudessem ser testados diretamente pelo navegador.
+2. **Logs de Auditoria**: Além do `isDeleted`, criaria uma tabela de logs para registrar qual admin alterou qual técnico e em que horário.
+3. **Containerização Completa**: Criaria um `docker-compose.yml` para subir a API e o Banco de Dados.
+4. **Refresh Tokens**: Evoluiria o sistema de autenticação para incluir refresh tokens, melhorando a experiência do usuário administrador.
+5. **CI/CD Pipeline**: Configuração de GitHub Actions para rodar os testes automaticamente a cada push.

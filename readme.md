@@ -4,15 +4,15 @@ Este projeto é o backend da aplicação de gerenciamento de técnicos, desenvol
 
 ---
 
-## 🚀 Como começar (Passo a passo)
+## Como começar (Passo a passo)
 
 Siga as instruções abaixo para configurar e rodar a aplicação em seu ambiente local.
 
 ### 1. Clonar o Repositório
 Abra o terminal na pasta onde deseja salvar o projeto e execute:
 ```bash
-git clone https://github.com/seu-usuario/nome-do-repositorio.git
-cd nome-do-repositorio
+git clone https://github.com/DaniNere/pratica-challenge-backend
+cd pratica-challenge-backend
 ```
 
 ### 2. Configurar o Banco de Dados (SQL Server)
@@ -27,7 +27,7 @@ docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=YourStrong!Passw0rd" \
 ```
 
 #### Opção B: Instalação Local
-Certifique-se de que o serviço do SQL Server está rodando e que você tem as credenciais de acesso (usuário e senha) em mãos.
+Caso prefira não utilizar o Docker, você deve ter o **SQL Server instalado localmente** em sua máquina. Certifique-se de que o serviço do banco de dados está rodando e que você possui todas as credenciais de acesso (instância, usuário e senha) prontas para uso.
 
 ---
 
@@ -40,15 +40,7 @@ npm install
 ### 4. Configurar Variáveis de Ambiente
 Crie um arquivo chamado `.env` na raiz do projeto (use o arquivo `.env.example` como referência) e preencha com as suas credenciais:
 
-```env
-# Exemplo de configuração (ajuste conforme seu banco)
-DATABASE_URL="sqlserver://localhost:1433;database=pratica_db;user=sa;password=YourStrong!Passw0rd;encrypt=true;trustServerCertificate=true;"
-SHADOW_DATABASE_URL="sqlserver://localhost:1433;database=pratica_shadow;user=sa;password=YourStrong!Passw0rd;encrypt=true;trustServerCertificate=true;"
-
-JWT_SECRET="sua_chave_secreta_aqui"
-```
-*Nota: A `SHADOW_DATABASE_URL` é exigida pelo Prisma para realizar as migrações no SQL Server.*
-
+*Nota: No SQL Server, a `SHADOW_DATABASE_URL` é utilizada pelo Prisma Migrate para detectar mudanças no schema. Em ambiente Docker (com usuário sa), o Prisma pode criá-la automaticamente se a variável for omitida.*
 ---
 
 ### 5. Preparar o Banco de Dados
@@ -161,29 +153,9 @@ model Admin {
 }
 ```
 
-- Guarda apenas o **hash da senha**, nunca a senha em texto puro.
-- Permite evoluir futuramente para múltiplos administradores.
 
-  if (existing) {
-    console.log("Admin already exists, skipping seed.");
-    return;
-  }
+## 👤 Autor
 
-  const passwordHash = await bcrypt.hash(plainPassword, 10);
+Desenvolvido por **Danielle Nere** – LinkedIn | GitHub
 
-  await prisma.admin.create({
-    data: {
-      email,
-      password: passwordHash,
-    },
-  });
-
-  console.log("Admin created:", email);
-}
-
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async
+---
