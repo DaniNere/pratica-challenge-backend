@@ -1,4 +1,4 @@
-import { IsEmail, IsOptional, IsString, Length, Matches } from "class-validator";
+import { IsEmail, IsOptional, IsString, Length } from "class-validator";
 
 export class UpdateTechnicianDTO {
   @IsString()
